@@ -45,8 +45,8 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     
     let flags: OFlag = [OFlag::O_CREAT, OFlag::O_WRONLY, OFlag::O_TRUNC].iter().copied().collect();
     let mode: Mode = [Mode::S_IRUSR, Mode::S_IWUSR].iter().copied().collect();
-    let file_out = open("tar.rs", flags, mode)?;
-    dup2(file_out, 1)?;
+    //let file_out = open("tar.rs", flags, mode)?;
+    //dup2(file_out, 1)?;
     println!("{}", newmsg); 
     Ok(())
 }
