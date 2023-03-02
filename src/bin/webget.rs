@@ -34,19 +34,19 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     let mut newmsg = "".to_string();
     //iterate through buf reader using lines    
     //add to sequence of string the we are getting back (print to clarify)   
-     //break up string to get header, shave it off, save the rest to local file    
+     //break up string to get header, shave it off, save the rest to local file 
+      
     for line in buf.lines(){
         //println!("{}", line.unwrap());
         newmsg += &(line.unwrap() + "\n");
+        
         //newmsg.push_str("{}", line);
         // newmsg += &("/".to_string() + &line);
     }
     //write to file once message received
     
-    let flags: OFlag = [OFlag::O_CREAT, OFlag::O_WRONLY, OFlag::O_TRUNC].iter().copied().collect();
-    let mode: Mode = [Mode::S_IRUSR, Mode::S_IWUSR].iter().copied().collect();
-    //let file_out = open("tar.rs", flags, mode)?;
-    //dup2(file_out, 1)?;
+    //Make sure to shave off headers
+    let f = File::create(""); 
     println!("{}", newmsg); 
     Ok(())
 }
