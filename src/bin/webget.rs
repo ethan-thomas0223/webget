@@ -19,8 +19,8 @@ fn main() {
     for entry in parts.iter().skip(3) {
         req += &("/".to_string() + entry); 
     }
-    println!("{}", host);
-    println!("{}", req);
+    //println!("{}", host);
+    //println!("{}", req);
     send_message(host.as_str(), 443, &req); 
     //execvp(&cstring_cmd[0], &cstring_cmd);
 }
@@ -53,7 +53,7 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     
     //Make sure to shave off headers
     let f = File::create(message); 
-    println!("{}", newmsg); 
+    //println!("{}", newmsg); 
     f?.write(newmsg.as_bytes());
     Ok(())
 }

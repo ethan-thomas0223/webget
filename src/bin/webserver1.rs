@@ -18,6 +18,7 @@ fn main() -> std::io::Result<()> {
 fn handle_client(mut stream: TcpStream) {
     //println!("{}", stream);
     thread::spawn(move||{
+        let mut client_ip = "";
         let mut client_msg = "".to_string();
         let mut end_char = false;
         while !end_char{
@@ -27,6 +28,7 @@ fn handle_client(mut stream: TcpStream) {
             let msg = stream.read(&mut buf);
             let from_bytes = std::str::from_utf8(&buf).unwrap();
             client_msg.push_str(from_bytes);
+            
             if client_msg.contains("\r\n\r\n") || client_msg.contains("\n\n"){
                 end_char = true;
             }
