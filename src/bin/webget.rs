@@ -6,6 +6,7 @@ use std::io::Write;
 use std::io::BufReader; 
 use std::io::BufRead;
 use std::net::TcpStream; 
+use std::fs::File;
 //Usage: webget url
 fn main() {
     let mut url: String = std::env::args().last().unwrap();
@@ -35,19 +36,25 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     //iterate through buf reader using lines    
     //add to sequence of string the we are getting back (print to clarify)   
      //break up string to get header, shave it off, save the rest to local file 
-      
+    let mut lcount = 0;  
     for line in buf.lines(){
         //println!("{}", line.unwrap());
-        newmsg += &(line.unwrap() + "\n");
         
+        newmsg += &(line.unwrap() + "\n");
+        if newmsg.ends_with("\n\n") || newmsg.ends_with("\r\n\r\n"){
+            //println!("here");
+            //newmsg += "here";
+            newmsg = "".to_string();
+        }
         //newmsg.push_str("{}", line);
         // newmsg += &("/".to_string() + &line);
     }
     //write to file once message received
     
     //Make sure to shave off headers
-    let f = File::create(""); 
+    let f = File::create(message); 
     println!("{}", newmsg); 
+    f?.write(newmsg.as_bytes());
     Ok(())
 }
 
