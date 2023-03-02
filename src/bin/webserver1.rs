@@ -18,9 +18,8 @@ fn main() -> std::io::Result<()> {
 fn handle_client(mut stream: TcpStream) {
     //println!("{}", stream);
     thread::spawn(move||{
-        let mut client_ip = "";
-        let mut client_msg = "".to_string();
         let mut end_char = false;
+        let mut client_msg = "".to_string();
         while !end_char{
             //let buf = BufReader::new(stream);
             //need 500 byte limiter
@@ -33,6 +32,7 @@ fn handle_client(mut stream: TcpStream) {
                 end_char = true;
             }
         }
+        println!("Client IP address: {:?}", stream.peer_addr().unwrap());        
         println!("{}", client_msg);
     });
 }
