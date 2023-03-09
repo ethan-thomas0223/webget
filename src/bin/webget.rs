@@ -19,13 +19,16 @@ fn main() {
     }
     //println!("{}", host);
     //println!("{}", req);
-    let get = format!("GET {req} HTTP/1.1\nHost: {host} \nConnection: Close"); 
+    let get = format!("GET {req} HTTP/1.1\r\nHost: {host} \r\nConnection: Close \r\n\r\n"); 
     println!("{}", get);
     send_message(host.as_str(), 443, &get).unwrap(); 
 }
 
 fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     //println!("here");
+    let get_msg_vec: Vec<&str> = message.split_whitespace().collect();
+    //println!("{}", file_req[1]);
+    let file_req = get_msg_vec[1].to_owned();
     let tcp = TcpStream::connect(format!("{}:{}", host, port))?;
     let connector = SslConnector::builder(SslMethod::tls())?.build();
     let mut stream = connector.connect(host, tcp).unwrap();
@@ -36,25 +39,26 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     //iterate through buf reader using lines    
     //add to sequence of string the we are getting back (print to clarify)   
     //break up string to get header, shave it off, save the rest to local file
-    
+    let mut lcount = 0;
     for line in buf.lines(){
         //println!("here");
         //println!("{}", line.unwrap());
         newmsg += &(line.unwrap() + "\n");
-        if newmsg.ends_with("\n\n") || newmsg.ends_with("\r\n\r\n"){  
+        if (newmsg.ends_with("\n\n") || newmsg.ends_with("\r\n\r\n")) && lcount < 8{  
             //println!("here");
             //newmsg += "here";
             newmsg = "".to_string();
         }
         //newmsg.push_str("{}", line);
         // newmsg += &("/".to_string() + &line);
+        lcount += 1;
     }
     
     //write to file once message received
     
     //Make sure to shave off headers
-    let f = File::create(message); 
-    println!("{}", newmsg); 
+    let f = File::create(format!("{file_req}")); 
+    //println!("{}", newmsg); 
     f?.write(newmsg.as_bytes())?;
     Ok(())
 }
