@@ -3,6 +3,7 @@ use std::{thread, sync::Arc};
 use crossbeam::atomic::AtomicCell;
 use std::io::BufReader;
 use std::io::Read;
+use std::path::Path;
 
 //got TCP Listener framewrok from documentation
 fn main() -> std::io::Result<()> {
@@ -22,7 +23,6 @@ fn handle_client(mut stream: TcpStream) {
         let mut client_msg = "".to_string();
         let mut bytes_counted = 0;
         while !end_char{
-            //let buf = BufReader::new(stream);
             //need 500 byte limiter
             let mut buf = [0; 500];
             let msg = stream.read(&mut buf);
@@ -43,6 +43,8 @@ fn handle_client(mut stream: TcpStream) {
         println!("Bytes read from client {}", &bytes_counted);      
         println!("{}", &client_msg[0..64]);
         println!("{}", result);
+        //spit back the file we need to send back to client here
+        //return result
     });
 }
 
@@ -56,17 +58,35 @@ fn get_req_file(message: String) -> String {
         }
         counter += 1;
     }
-    
+    //file validation here
+    if requested.is_file(){
+        //placeholder variables below; not sure of correct methods to use
+        if requested in cur dir {
+            return requested;
+        }else{
+            requested = "403".to_string();
+        }
+    }else{
+        requested = "404".to_string();
+    }
     return requested;
-    
 }
 
 fn return_message(req: String) -> String {
+    //check to see if is valid file 
+    //set result to error message
+    //Ferrer said to not worry about validation but to check for 404 then move on 
     let mut result = format!("<html>
         <body>
             <h1>Message received</h1>
             Requested file: {req} <br>
         </body>
     </html>");
+    if req == "403"{
+        result = "403 error message";
+    }
+    if req == "404"{
+        result = "404 error message";
+    }
     return result.to_string();
 }
