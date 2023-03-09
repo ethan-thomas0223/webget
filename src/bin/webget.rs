@@ -5,6 +5,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 use std::net::TcpStream; 
 use std::fs::File;
+use std::ffi::OsStr;
 //Usage: webget url
 fn main() {
     let url: String = std::env::args().last().unwrap();
@@ -55,8 +56,7 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     }
     
     //write to file once message received
-    
-    //Make sure to shave off headers
+    //let filename = file_req.file_name();
     let f = File::create(format!("{file_req}")); 
     //println!("{}", newmsg); 
     f?.write(newmsg.as_bytes())?;
