@@ -56,7 +56,7 @@ fn send_message(host: &str, port: usize, message: &str) -> io::Result<()> {
     }
     
     //write to file once message received
-    //let filename = file_req.file_name();
+    println!("{}", &file_req);
     let f = File::create(format!("{file_req}")); 
     //println!("{}", newmsg); 
     f?.write(newmsg.as_bytes())?;
