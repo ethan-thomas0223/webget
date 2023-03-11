@@ -4,6 +4,7 @@ use crossbeam::atomic::AtomicCell;
 use std::io::BufReader;
 use std::io::Read;
 use std::path::Path;
+use std::path::PathBuf;
 
 //got TCP Listener framewrok from documentation
 fn main() -> std::io::Result<()> {
@@ -59,16 +60,16 @@ fn get_req_file(message: String) -> String {
         counter += 1;
     }
     //file validation here
-    if requested.is_file(){
-        //placeholder variables below; not sure of correct methods to use
-        if requested in cur dir {
-            return requested;
-        }else{
-            requested = "403".to_string();
-        }
+    
+    let p = PathBuf::from(format!("{requested}"));
+    let path = p.as_path(); 
+    //assert_eq!(Path::new("/test"), p.as_path());
+    if path.is_file(){
+        return requested; 
     }else{
         requested = "404".to_string();
     }
+    
     return requested;
 }
 
@@ -82,11 +83,8 @@ fn return_message(req: String) -> String {
             Requested file: {req} <br>
         </body>
     </html>");
-    if req == "403"{
-        result = "403 error message";
-    }
     if req == "404"{
-        result = "404 error message";
+        result = "404 error message".to_string();
     }
     return result.to_string();
 }
