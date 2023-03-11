@@ -5,14 +5,23 @@ use std::io::BufReader;
 use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 //got TCP Listener framewrok from documentation
 fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("localhost:8888")?;
+    //keep track of request counters here
+    //otherwise no way to update them based on the current code base structure
+    let req_counter = Arc::new(Mutex::new(0));
+    let valid_counter = Arc::new(Mutex::new(0));
 
     // accept connections and process them serially
     for stream in listener.incoming() {
+        let req_counter = Arc::clone(&req_counter); //goes outside thread
         handle_client(stream?);
+        
+        let mut req_num = counter.lock().unwrap(); //inside thread
+        *req_num += 1;                              //inside thread 
     }
     Ok(())
 }
@@ -26,7 +35,7 @@ fn handle_client(mut stream: TcpStream) {
         while !end_char{
             //need 500 byte limiter
             let mut buf = [0; 500];
-            let msg = stream.read(&mut buf);
+            let _msg = stream.read(&mut buf);
             let from_bytes = std::str::from_utf8(&buf).unwrap();
             client_msg.push_str(from_bytes);
 
