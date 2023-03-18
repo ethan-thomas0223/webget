@@ -18,17 +18,23 @@ fn main() -> std::io::Result<()> {
     // accept connections and process them serially
     for stream in listener.incoming() {
         let req_counter = Arc::clone(&req_counter); //goes outside thread
-        handle_client(stream?);
+        let valid_counter = Arc::clone(&valid_counter);
+        handle_client(stream?, req_counter, valid_counter);
         
-        let mut req_num = counter.lock().unwrap(); //inside thread
-        *req_num += 1;                              //inside thread 
+        //let mut req_num = counter.lock().unwrap(); //inside thread
+        //*req_num += 1;                              //inside thread 
     }
     Ok(())
 }
 
-fn handle_client(mut stream: TcpStream) {
+fn handle_client(mut stream: TcpStream, req_counter: Arc<Mutex<i32>>, valid_counter: Arc<Mutex<i32>>) {
     //println!("{}", stream);
+    //let req_counter = Arc::clone(&req_counter); //goes outside thread
+    //let valid_counter = Arc::clone(&valid_counter);
     thread::spawn(move||{
+        let mut req_num = req_counter.lock().unwrap();
+        *req_num += 1;
+        let mut valid_num = valid_counter.lock().unwrap();
         let mut end_char = false;
         let mut client_msg = "".to_string();
         let mut bytes_counted = 0;
@@ -48,11 +54,17 @@ fn handle_client(mut stream: TcpStream) {
         }
         let req_file = get_req_file(client_msg.to_owned());
         let result = return_message(req_file);
-        
+        if result != "404 error message".to_string(){
+            //let mut valid_num = valid_counter.lock().unwrap();
+            *valid_num += 1;
+
+        }
         println!("Client IP address: {:?}", stream.peer_addr().unwrap());  
         println!("Bytes read from client {}", &bytes_counted);      
         println!("{}", &client_msg[0..64]);
         println!("{}", result);
+        println!("{}", req_num);
+        println!("{}", valid_num);
         //spit back the file we need to send back to client here
         //return result
     });
