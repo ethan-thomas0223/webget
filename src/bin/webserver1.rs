@@ -11,28 +11,22 @@ use std::sync::Mutex;
 fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("localhost:8888")?;
     //keep track of request counters here
-    //otherwise no way to update them based on the current code base structure
     let req_counter = Arc::new(Mutex::new(0));
     let valid_counter = Arc::new(Mutex::new(0));
 
     // accept connections and process them serially
     for stream in listener.incoming() {
-        let req_counter = Arc::clone(&req_counter); //goes outside thread
-        let valid_counter = Arc::clone(&valid_counter);
+        let req_counter = Arc::clone(&req_counter); //clones go outside thread
+        let valid_counter = Arc::clone(&valid_counter); 
         handle_client(stream?, req_counter, valid_counter);
-        
-        //let mut req_num = counter.lock().unwrap(); //inside thread
-        //*req_num += 1;                              //inside thread 
     }
     Ok(())
 }
 
 fn handle_client(mut stream: TcpStream, req_counter: Arc<Mutex<i32>>, valid_counter: Arc<Mutex<i32>>) {
     //println!("{}", stream);
-    //let req_counter = Arc::clone(&req_counter); //goes outside thread
-    //let valid_counter = Arc::clone(&valid_counter);
     thread::spawn(move||{
-        let mut req_num = req_counter.lock().unwrap();
+        let mut req_num = req_counter.lock().unwrap(); //lock unwraps go inside thread
         *req_num += 1;
         let mut valid_num = valid_counter.lock().unwrap();
         let mut end_char = false;
@@ -46,7 +40,7 @@ fn handle_client(mut stream: TcpStream, req_counter: Arc<Mutex<i32>>, valid_coun
             client_msg.push_str(from_bytes);
 
             if client_msg.contains("\r\n\r\n") || client_msg.contains("\n\n"){
-                //need to find num bytes actually read
+                //need to find num bytes actually read instead of len
                 bytes_counted = buf.len();
                 end_char = true;
             }
@@ -54,19 +48,19 @@ fn handle_client(mut stream: TcpStream, req_counter: Arc<Mutex<i32>>, valid_coun
         }
         let req_file = get_req_file(client_msg.to_owned());
         let result = return_message(req_file);
-        if result != "404 error message".to_string(){
+        if result != "HTTP/1.1 404 Not Found".to_string(){
             //let mut valid_num = valid_counter.lock().unwrap();
             *valid_num += 1;
 
         }
-        println!("Client IP address: {:?}", stream.peer_addr().unwrap());  
-        println!("Bytes read from client {}", &bytes_counted);      
-        println!("{}", &client_msg[0..64]);
+        //println!("Client IP address: {:?}", stream.peer_addr().unwrap());  
+        //println!("Bytes read from client {}", &bytes_counted);      
+        //println!("{}", &client_msg[0..64]);
         println!("{}", result);
         println!("{}", req_num);
         println!("{}", valid_num);
         //spit back the file we need to send back to client here
-        //return result
+        return result
     });
 }
 
@@ -85,12 +79,14 @@ fn get_req_file(message: String) -> String {
     let p = PathBuf::from(format!("{requested}"));
     let path = p.as_path(); 
     //assert_eq!(Path::new("/test"), p.as_path());
+    //println!("{}",path.display());
     if path.is_file(){
+        //need to return the index.html file from the path directory here
+        //not just the path, shouldn't the request be an index.html file though?
         return requested; 
     }else{
         requested = "404".to_string();
     }
-    
     return requested;
 }
 
@@ -105,7 +101,7 @@ fn return_message(req: String) -> String {
         </body>
     </html>");
     if req == "404"{
-        result = "404 error message".to_string();
+        result = "HTTP/1.1 404 Not Found".to_string();
     }
     return result.to_string();
 }
