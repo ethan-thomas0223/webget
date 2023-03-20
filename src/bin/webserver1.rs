@@ -124,9 +124,7 @@ fn return_message(req: String) -> String {
     if req == "404"{
         result = "HTTP/1.1 404 Not Found".to_string();
     }else{
-        let p = PathBuf::from(req);
-        let path = p.as_path();
-        let result = path.display().to_string();     
+        result = fs::read_to_string(req).unwrap();    
     }
     return result.to_string();
 }
