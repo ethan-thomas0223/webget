@@ -6,6 +6,7 @@ use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::fs;
 
 //got TCP Listener framewrok from documentation
 fn main() -> std::io::Result<()> {
@@ -74,16 +75,33 @@ fn get_req_file(message: String) -> String {
         }
         counter += 1;
     }
+
     //file validation here
-    
     let p = PathBuf::from(format!("{requested}"));
     let path = p.as_path(); 
     //assert_eq!(Path::new("/test"), p.as_path());
     //println!("{}",path.display());
-    if path.is_file(){
+    if path.exists(){
         //need to return the index.html file from the path directory here
         //not just the path, shouldn't the request be an index.html file though?
-        return requested; 
+        if path.is_dir(){
+            //find index.html file
+            //got code from the read_dir() rust documentation
+            for entry in path.read_dir().expect("read_dir call failed") {
+                if let Ok(entry) = entry {
+                    println!("{:?}", entry.path());
+                    if entry.path().ends_with("index.html"){
+                        requested = entry.path().display().to_string();
+                    }
+                }
+            }
+        }
+        else{
+            //find index.html
+            if path.ends_with("index.html"){
+                requested = path.display().to_string();
+            }
+        }
     }else{
         requested = "404".to_string();
     }
@@ -94,14 +112,21 @@ fn return_message(req: String) -> String {
     //check to see if is valid file 
     //set result to error message
     //Ferrer said to not worry about validation but to check for 404 then move on 
+    let mut result = " ".to_string();
+    /* 
     let mut result = format!("<html>
         <body>
             <h1>Message received</h1>
             Requested file: {req} <br>
         </body>
     </html>");
+    */
     if req == "404"{
         result = "HTTP/1.1 404 Not Found".to_string();
+    }else{
+        let p = PathBuf::from(req);
+        let path = p.as_path();
+        let result = path.display().to_string();     
     }
     return result.to_string();
 }
