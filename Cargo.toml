@@ -9,3 +9,4 @@ edition = "2021"
 [dependencies]
 openssl = { version = "0.10", features = ["vendored"] }
 crossbeam = "0.8"
+ ramdisk = {git = "https://github.com/gjf2a/ramdisk"}
